@@ -97,30 +97,19 @@ if __name__ == '__main__':
     for file in files:
         if file.endswith('pdf'):
             pyMuPDF_fitz(file,dirpath)
-            allfile = get_filename(dirpath)
-            for one in allfile:
-                if one.endswith('png'):
-                    img = Image.open(one)
-                    w, h = img.size
-                    if h > 1000:
-                        splitimage(one,os.path.split(one)[0])
-                        splitfiles = get_filename(one.split('.')[0])
-                        for spfile in splitfiles:
-                            ocr_2_txt(spfile)
-                        merge_txt(dirpath + '/' +os.path.split(one)[1].split('.')[0])
-                        shutil.rmtree(dirpath + '/' +os.path.split(one)[1].split('.')[0])
-                    else:
-                        ocr_2_txt(one)
-        elif file.endswith('png'):
-            img = Image.open(file)
-            w, h = img.size
-            if h > 1000:
-                splitimage(file,os.path.split(file)[0])
-                splitfiles = get_filename(file.split('.')[0])
-                for spfile in splitfiles:
-                    ocr_2_txt(spfile)
-                merge_txt(dirpath + '/' +os.path.split(file)[1].split('.')[0])
-                shutil.rmtree(dirpath + '/' +os.path.split(file)[1].split('.')[0])
-            else:
-                ocr_2_txt(file)
+        allfile = get_filename(dirpath)
+        for one in allfile:
+            if one.endswith('png'):
+                img = Image.open(one)
+                w, h = img.size
+                if h > 1000:
+                    splitimage(one,os.path.split(one)[0])
+                    splitfiles = get_filename(one.split('.')[0])
+                    for spfile in splitfiles:
+                        ocr_2_txt(spfile)
+                    merge_txt(dirpath + '/' +os.path.split(one)[1].split('.')[0])
+                    shutil.rmtree(dirpath + '/' +os.path.split(one)[1].split('.')[0])
+                else:
+                    ocr_2_txt(one)
+        
     print('完成')
