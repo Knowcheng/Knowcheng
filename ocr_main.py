@@ -2,7 +2,6 @@
 import os
 from agentocr import OCRSystem  #OCR识别的主要库
 import fitz                            #PDF转图片库
-import datetime
 from PIL import Image
 import shutil
 #获取文件
@@ -93,7 +92,7 @@ def merge_txt(path):
     
 
 if __name__ == '__main__':
-    dirpath = your path   #修改成目标文件目录
+    dirpath = r'D:\chengkang\个人\股票'
     files = get_filename(dirpath)
     for file in files:
         if file.endswith('pdf'):
@@ -112,4 +111,16 @@ if __name__ == '__main__':
                         shutil.rmtree(dirpath + '/' +os.path.split(one)[1].split('.')[0])
                     else:
                         ocr_2_txt(one)
+        elif file.endswith('png'):
+            img = Image.open(file)
+            w, h = img.size
+            if h > 1000:
+                splitimage(file,os.path.split(file)[0])
+                splitfiles = get_filename(file.split('.')[0])
+                for spfile in splitfiles:
+                    ocr_2_txt(spfile)
+                merge_txt(dirpath + '/' +os.path.split(file)[1].split('.')[0])
+                shutil.rmtree(dirpath + '/' +os.path.split(file)[1].split('.')[0])
+            else:
+                ocr_2_txt(file)
     print('完成')
