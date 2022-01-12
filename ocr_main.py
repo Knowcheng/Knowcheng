@@ -17,6 +17,7 @@ def get_filename(path):
 
 def pyMuPDF_fitz(pdfPath, imagePath):
     pdfDoc = fitz.open(pdfPath)
+    filepath = imagePath + '/'+ os.path.split(pdfPath)[1][:-4]
     for pg in range(pdfDoc.pageCount):
         page = pdfDoc[pg]
         rotate = int(0)
@@ -26,10 +27,10 @@ def pyMuPDF_fitz(pdfPath, imagePath):
         zoom_y = 4
         mat = fitz.Matrix(zoom_x, zoom_y).preRotate(rotate)
         pix = page.getPixmap(matrix=mat, alpha=False)
-        if not os.path.exists(imagePath):  # 判断存放图片的文件夹是否存在
-            os.makedirs(imagePath)  # 若图片文件夹不存在就创建
+        if not os.path.exists(filepath):  # 判断存放图片的文件夹是否存在
+            os.makedirs(filepath)  # 若图片文件夹不存在就创建
         try:
-            pix.writePNG(imagePath + '/' + os.path.split(pdfPath)[1][:-4]+'.png')  # 将图片写入指定的文件夹内
+            pix.writePNG(filepath + '/' + os.path.split(pdfPath)[1][:-4]+'_{}'.format(pg)+'.png')  # 将图片写入指定的文件夹内
         except Exception as e:
             print(e)
 
@@ -42,10 +43,10 @@ def ocr_2_txt(file):
     line_list=[]
     ocr = OCRSystem(config='ch')
     result = ocr.ocr(file)
-    name = os.path.split(file)[1][:-4]
+    name = filename[1][:-4]
     for line in result:
         string = line[1][0]
-        with open(os.path.split(file)[0]+'/'+'{}.txt'.format(name),'a',encoding='utf8') as f:
+        with open(filename[0]+'/'+'{}.txt'.format(name),'a',encoding='utf8') as f:
             f.write(string + '\n')
 ##切割长图
 def splitimage(src, dstpath):
@@ -85,31 +86,35 @@ def merge_txt(path):
             with open(file_one,'r',encoding='utf8') as f:
                 text = f.read()
                 text_list.append(text)
-    with open('{}.txt'.format(name),'a',encoding='utf8')as g:
+    with open(os.path.split(path)[0]+'/'+'{}.txt'.format(name),'a',encoding='utf8')as g:
        
         g.write(','.join(text_list))
         
     
 
 if __name__ == '__main__':
-    dirpath = r'D:\chengkang\个人\股票'
+    dirpath = 'YOUR PATH'
     files = get_filename(dirpath)
     for file in files:
-        if file.endswith('pdf'):
-            pyMuPDF_fitz(file,dirpath)
-        allfile = get_filename(dirpath)
-        for one in allfile:
-            if one.endswith('png'):
-                img = Image.open(one)
-                w, h = img.size
-                if h > 1000:
-                    splitimage(one,os.path.split(one)[0])
-                    splitfiles = get_filename(one.split('.')[0])
-                    for spfile in splitfiles:
-                        ocr_2_txt(spfile)
-                    merge_txt(dirpath + '/' +os.path.split(one)[1].split('.')[0])
-                    shutil.rmtree(dirpath + '/' +os.path.split(one)[1].split('.')[0])
-                else:
-                    ocr_2_txt(one)
-        
+        filename = os.path.split(file)
+        if file.endswith('pdf') or file.endswith('PDF'):
+            pyMuPDF_fitz(file,dirpath)     
+            allfile = get_filename(file.split('.')[0])
+            for one in allfile:
+                ocr_2_txt(one)
+            merge_txt(dirpath + '/' +filename[1].split('.')[0])
+            shutil.rmtree(dirpath + '/' +filename[1].split('.')[0])           
+        if file.endswith('png') or file.endswith('PNG') or file.endswith('jpg')or file.endswith('JPG') :
+            img = Image.open(file)
+            w, h = img.size
+            if h > 2000:
+                splitimage(file,filename[0])
+                splitfiles = get_filename(file.split('.')[0])
+                for spfile in splitfiles:
+                    ocr_2_txt(spfile)
+                merge_txt(dirpath + '/' +filename[1].split('.')[0])
+                shutil.rmtree(dirpath + '/' +filename[1].split('.')[0])
+            else:
+                ocr_2_txt(file)
+       
     print('完成')
